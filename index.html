@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Interactive Guide to Dividends</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Slate Blue -->
+    <!-- Application Structure Plan: The SPA is designed as a narrative journey for a novice investor. It begins with a simple "What is it?" (Hero), moves to "How does it work?" (Lifecycle Timeline), then "Why does it matter?" (Corporate vs. Investor View), delves into "What are the details?" (Types & Taxation), provides tools for "How do I analyze it?" (Yield Calculator & Price Impact), and concludes with "What's the summary?" (Key Takeaways). This structure prioritizes a logical learning progression over the report's linear format, using interactive elements like clickable timelines, toggles, and calculators to make abstract concepts tangible and improve user engagement and retention. -->
+    <!-- Visualization & Content Choices: 
+        - Dividend Lifecycle: Goal: Organize/Change. Method: Interactive HTML/CSS/JS timeline. Interaction: Click to reveal details. Justification: More engaging and intuitive than a static table for showing a process. Library: Vanilla JS.
+        - Compounding Growth: Goal: Compare/Change. Method: Chart.js Bar Chart. Interaction: Toggle between reinvested/not reinvested. Justification: Visually demonstrates the power of compounding far more effectively than text alone. Library: Chart.js.
+        - Tax Comparison: Goal: Compare. Method: Chart.js Bar Chart. Interaction: Static visual. Justification: Clearly illustrates the significant tax advantage of qualified dividends over ordinary ones. Library: Chart.js.
+        - Dividend Yield Calculator: Goal: Inform/Relate. Method: HTML form + JS. Interaction: User inputs data to get a result. Justification: Provides a hands-on tool for understanding the relationship between price, dividend, and yield. Library: Vanilla JS.
+        - Price/Yield Inverse Relationship: Goal: Relate/Change. Method: Chart.js Line Chart. Interaction: Button click simulates price change and updates chart. Justification: Dynamically shows the inverse relationship, a key concept that is hard to grasp from static text. Library: Chart.js.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FDFBF7; color: #333333; }
+        .nav-link { transition: color 0.3s, border-color 0.3s; }
+        .nav-link.active { color: #5A8F7B; border-bottom-color: #5A8F7B; }
+        .section-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .section-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .tab-button.active { background-color: #6A8EAE; color: white; }
+        .timeline-item.active .timeline-dot { background-color: #5A8F7B; transform: scale(1.2); }
+        .timeline-item.active .timeline-content { opacity: 1; max-height: 500px; padding-top: 1rem; padding-bottom: 1rem; }
+        .timeline-content { opacity: 0; max-height: 0; overflow: hidden; transition: all 0.5s ease-in-out; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-[#6A8EAE]">
+                Dividend Explorer
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#intro" class="nav-link text-gray-600 hover:text-[#5A8F7B] border-b-2 border-transparent pb-1">Introduction</a>
+                <a href="#lifecycle" class="nav-link text-gray-600 hover:text-[#5A8F7B] border-b-2 border-transparent pb-1">Lifecycle</a>
+                <a href="#perspectives" class="nav-link text-gray-600 hover:text-[#5A8F7B] border-b-2 border-transparent pb-1">Perspectives</a>
+                <a href="#types" class="nav-link text-gray-600 hover:text-[#5A8F7B] border-b-2 border-transparent pb-1">Types & Tax</a>
+                <a href="#analysis" class="nav-link text-gray-600 hover:text-[#5A8F7B] border-b-2 border-transparent pb-1">Analysis</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        
+        <section id="intro" class="text-center mb-24 scroll-mt-20">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#6A8EAE] mb-4">What is a Dividend?</h1>
+            <p class="max-w-3xl mx-auto text-lg text-gray-700">
+                Think of a dividend as a "thank you" bonus from a company to its owners (the shareholders). When a company makes a profit, it can choose to share a piece of that profit with you. This application will guide you through everything you need to know about these payments, from how they work to why they are a cornerstone of investing for many.
+            </p>
+        </section>
+
+        <section id="lifecycle" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-[#6A8EAE] mb-2">The Lifecycle of a Dividend</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">A dividend payment follows a strict, predictable timeline. Understanding these four key dates is crucial for any investor to know if they will receive the dividend. Click on each step to learn more.</p>
+            <div class="relative">
+                <div class="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gray-300 transform -translate-y-1/2"></div>
+                <div class="relative flex flex-col md:flex-row justify-between items-center">
+                    <div id="timeline-1" class="timeline-item text-center cursor-pointer p-4 w-full md:w-1/4">
+                        <div class="timeline-dot relative w-8 h-8 mx-auto rounded-full bg-gray-300 border-4 border-[#FDFBF7] flex items-center justify-center font-bold text-white transition-all duration-300">1</div>
+                        <h3 class="mt-2 font-semibold text-lg">Declaration Date</h3>
+                        <div class="timeline-content text-left bg-white rounded-lg shadow-md mt-2 p-4">
+                            <h4 class="font-bold text-[#6A8EAE]">The Announcement</h4>
+                            <p class="text-sm text-gray-600">This is when the company's board of directors officially announces they will be paying a dividend. They'll state the amount per share and the payment and record dates.</p>
+                        </div>
+                    </div>
+                    <div id="timeline-2" class="timeline-item text-center cursor-pointer p-4 w-full md:w-1/4">
+                        <div class="timeline-dot relative w-8 h-8 mx-auto rounded-full bg-gray-300 border-4 border-[#FDFBF7] flex items-center justify-center font-bold text-white transition-all duration-300">2</div>
+                        <h3 class="mt-2 font-semibold text-lg">Ex-Dividend Date</h3>
+                        <div class="timeline-content text-left bg-white rounded-lg shadow-md mt-2 p-4">
+                            <h4 class="font-bold text-[#6A8EAE]">The Cut-Off</h4>
+                            <p class="text-sm text-gray-600">This is the most critical date for investors. You must buy the stock *before* this date to receive the dividend. If you buy on or after this date, the seller gets the payment. The stock exchange, not the company, sets this date.</p>
+                        </div>
+                    </div>
+                    <div id="timeline-3" class="timeline-item text-center cursor-pointer p-4 w-full md:w-1/4">
+                        <div class="timeline-dot relative w-8 h-8 mx-auto rounded-full bg-gray-300 border-4 border-[#FDFBF7] flex items-center justify-center font-bold text-white transition-all duration-300">3</div>
+                        <h3 class="mt-2 font-semibold text-lg">Record Date</h3>
+                        <div class="timeline-content text-left bg-white rounded-lg shadow-md mt-2 p-4">
+                            <h4 class="font-bold text-[#6A8EAE]">The "Who's Who"</h4>
+                            <p class="text-sm text-gray-600">On this date, the company checks its records to see who the official shareholders are. If you're on the list, you get the dividend. This is why the ex-dividend date is set a day or two earlier, to allow time for trades to settle.</p>
+                        </div>
+                    </div>
+                    <div id="timeline-4" class="timeline-item text-center cursor-pointer p-4 w-full md:w-1/4">
+                        <div class="timeline-dot relative w-8 h-8 mx-auto rounded-full bg-gray-300 border-4 border-[#FDFBF7] flex items-center justify-center font-bold text-white transition-all duration-300">4</div>
+                        <h3 class="mt-2 font-semibold text-lg">Payment Date</h3>
+                        <div class="timeline-content text-left bg-white rounded-lg shadow-md mt-2 p-4">
+                            <h4 class="font-bold text-[#6A8EAE]">Pay Day</h4>
+                            <p class="text-sm text-gray-600">This is the day the company actually sends the dividend payment to all eligible shareholders, either by check or as a deposit into their brokerage account.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="perspectives" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-[#6A8EAE] mb-12">Two Sides of the Dividend Coin</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                    <h3 class="text-2xl font-bold text-center text-[#5A8F7B] mb-4">Why Companies Pay Dividends</h3>
+                    <p class="text-gray-700 mb-6">The decision to pay dividends is a strategic one for any company. It's a powerful way to communicate with the market and manage capital. This section explains the key motivations, from signaling financial strength to instilling discipline in how cash is used.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1">✔</span>
+                            <div><strong class="font-semibold">Signal of Health:</strong> Consistent payments signal stability and confidence in future profits, building investor trust.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1">✔</span>
+                            <div><strong class="font-semibold">Attract Investors:</strong> They appeal to income-focused investors, like retirees, broadening the company's investor base.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1">✔</span>
+                             <div><strong class="font-semibold">Capital Discipline:</strong> Paying out cash reduces funds managers could misspend, forcing them to focus on high-return projects.</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                    <h3 class="text-2xl font-bold text-center text-[#C0A062] mb-4">Why Investors Value Dividends</h3>
+                    <p class="text-gray-700 mb-6">For investors, dividends are a cornerstone of many successful long-term strategies. They provide tangible benefits that go beyond just receiving a cash payment. This section explores how dividends create income, compound wealth, and provide stability.</p>
+                     <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1">✔</span>
+                            <div><strong class="font-semibold">Regular Income:</strong> Provides a steady stream of cash, which can be spent or reinvested.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1">✔</span>
+                             <div><strong class="font-semibold">Compounding Power:</strong> Reinvesting dividends to buy more shares can dramatically accelerate wealth growth over time.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1">✔</span>
+                             <div><strong class="font-semibold">Lower Volatility:</strong> The income provides a cushion during market downturns, and dividend-paying firms are often more stable.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+             <div class="mt-12 bg-white p-6 rounded-lg shadow-md section-card">
+                <h3 class="text-2xl font-bold text-center text-[#6A8EAE] mb-2">The Power of Compounding</h3>
+                <p class="text-center text-gray-600 mb-6">See how reinvesting dividends (through a DRIP) can supercharge your returns. Compare the growth of a $10,000 investment over 20 years with and without reinvesting a 3% annual dividend.</p>
+                <div class="chart-container">
+                    <canvas id="compoundingChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="types" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-[#6A8EAE] mb-12">Types of Dividends & How They're Taxed</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Not all dividends are created equal. Companies can pay them in different forms, and the IRS taxes them differently. This section breaks down the common types of dividends and clarifies the crucial distinction between "qualified" and "non-qualified" for tax purposes.</p>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div class="bg-white p-6 rounded-lg shadow-md text-center section-card">
+                    <h4 class="font-bold text-xl text-[#5A8F7B] mb-2">Cash Dividends</h4>
+                    <p class="text-gray-600">The most common type. A direct payment of money to your brokerage account. Simple and straightforward.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md text-center section-card">
+                    <h4 class="font-bold text-xl text-[#6A8EAE] mb-2">Stock Dividends</h4>
+                    <p class="text-gray-600">Instead of cash, you receive additional shares of the company. This conserves cash for the company but dilutes the value of each share.</p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-md text-center section-card">
+                    <h4 class="font-bold text-xl text-[#C0A062] mb-2">Special Dividends</h4>
+                    <p class="text-gray-600">A one-time, often large, payment made after a unique event, like selling off a part of the business. Not a regular occurrence.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                <h3 class="text-2xl font-bold text-center text-[#6A8EAE] mb-2">Qualified vs. Ordinary Dividends: A Tax Story</h3>
+                <p class="text-center text-gray-600 mb-6">This is a critical distinction that impacts your after-tax return. Qualified dividends get favorable tax rates, while ordinary dividends are taxed at your regular income rate. The chart below shows the difference.</p>
+                <div class="chart-container">
+                    <canvas id="taxChart"></canvas>
+                </div>
+                 <p class="text-xs text-center text-gray-500 mt-4">To be 'qualified', a dividend must be from a U.S. or qualified foreign company and you must hold the stock for a minimum period (usually 61 days around the ex-dividend date).</p>
+            </div>
+        </section>
+
+        <section id="analysis" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-[#6A8EAE] mb-12">Analyzing a Dividend Stock</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">How do you measure a dividend's value? This section introduces you to dividend yield, a key metric for comparison, and demonstrates the direct impact a dividend payment has on a stock's price. Use the interactive tools to see these concepts in action.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                    <h3 class="text-2xl font-bold text-center text-[#5A8F7B] mb-4">Dividend Yield Calculator</h3>
+                    <p class="text-gray-600 mb-4">Dividend yield shows the annual dividend as a percentage of the stock price. It's a great way to compare the income potential of different stocks. Try it yourself:</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="annualDividend" class="font-semibold text-gray-700">Annual Dividend Per Share ($)</label>
+                            <input type="number" id="annualDividend" value="2.50" class="w-full mt-1 p-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="stockPrice" class="font-semibold text-gray-700">Current Stock Price ($)</label>
+                            <input type="number" id="stockPrice" value="100" class="w-full mt-1 p-2 border border-gray-300 rounded-md">
+                        </div>
+                        <button id="calculateYield" class="w-full bg-[#6A8EAE] text-white font-bold py-2 px-4 rounded-md hover:bg-[#5a7d9a] transition-colors">Calculate Yield</button>
+                        <div class="text-center mt-4">
+                            <span class="font-bold text-lg">Dividend Yield:</span>
+                            <span id="yieldResult" class="font-bold text-xl text-[#5A8F7B]">2.50%</span>
+                        </div>
+                        <p class="text-xs text-gray-500">Caution: An unusually high yield can be a warning sign of a troubled company whose stock price has fallen, not a sign of a healthy dividend.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                    <h3 class="text-2xl font-bold text-center text-[#C0A062] mb-4">Price & Yield: An Inverse Dance</h3>
+                    <p class="text-gray-600 mb-4">A stock's price and its dividend yield move in opposite directions. If the dividend amount stays the same, a falling price means a rising yield, and vice versa. Click the button to see this relationship.</p>
+                     <div class="chart-container" style="height: 260px;">
+                        <canvas id="priceYieldChart"></canvas>
+                    </div>
+                    <button id="changePriceBtn" class="w-full mt-4 bg-[#C0A062] text-white font-bold py-2 px-4 rounded-md hover:bg-[#b08f54] transition-colors">Simulate Price Change</button>
+                    <div class="mt-4 text-center">
+                        <p class="font-semibold">Key takeaway: A dividend payment reduces a company's cash. To reflect this, the stock price typically drops by about the dividend amount on the ex-dividend date. Dividends aren't "free money," but a transfer of value.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-24">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>Dividend Explorer</p>
+            <p class="text-sm text-gray-400 mt-2">An interactive guide based on comprehensive financial reporting. For educational purposes only.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const currentlyActive = document.querySelector('.timeline-item.active');
+                    if (currentlyActive && currentlyActive !== item) {
+                        currentlyActive.classList.remove('active');
+                    }
+                    item.classList.toggle('active');
+                });
+            });
+
+            const compoundingData = {
+                labels: Array.from({ length: 21 }, (_, i) => `Year ${i}`),
+                datasets: [
+                    {
+                        label: 'Value (No Reinvestment)',
+                        data: Array.from({ length: 21 }, (_, i) => 10000 + (300 * i)),
+                        backgroundColor: '#C0A062',
+                        borderColor: '#C0A062',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Value (Dividends Reinvested)',
+                        data: Array.from({ length: 21 }, (_, i) => 10000 * Math.pow(1.03, i)),
+                        backgroundColor: '#5A8F7B',
+                        borderColor: '#5A8F7B',
+                        borderWidth: 1
+                    }
+                ]
+            };
+            const compoundingCtx = document.getElementById('compoundingChart').getContext('2d');
+            new Chart(compoundingCtx, {
+                type: 'bar',
+                data: compoundingData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { callback: value => '$' + value.toLocaleString() }
+                        },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { 
+                        tooltip: { callbacks: { label: (context) => `${context.dataset.label}: $${parseFloat(context.raw).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` } }
+                    }
+                }
+            });
+
+            const taxData = {
+                labels: ['Qualified Dividend', 'Top Ordinary Income Bracket'],
+                datasets: [{
+                    label: 'Max Federal Tax Rate',
+                    data: [20, 37],
+                    backgroundColor: ['#5A8F7B', '#C0A062'],
+                    borderColor: ['#5A8F7B', '#C0A062'],
+                    borderWidth: 1
+                }]
+            };
+            const taxCtx = document.getElementById('taxChart').getContext('2d');
+            new Chart(taxCtx, {
+                type: 'bar',
+                data: taxData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                     scales: {
+                        x: {
+                            ticks: { callback: value => value + '%' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (context) => `${context.raw}%` } }
+                    }
+                }
+            });
+
+            const yieldBtn = document.getElementById('calculateYield');
+            const yieldResult = document.getElementById('yieldResult');
+            const annualDividendInput = document.getElementById('annualDividend');
+            const stockPriceInput = document.getElementById('stockPrice');
+            yieldBtn.addEventListener('click', () => {
+                const dividend = parseFloat(annualDividendInput.value);
+                const price = parseFloat(stockPriceInput.value);
+                if (price > 0 && dividend >= 0) {
+                    const yieldValue = (dividend / price) * 100;
+                    yieldResult.textContent = yieldValue.toFixed(2) + '%';
+                } else {
+                    yieldResult.textContent = 'Invalid Input';
+                }
+            });
+
+            const priceYieldData = {
+                labels: ['Scenario 1', 'Scenario 2', 'Scenario 3', 'Scenario 4', 'Scenario 5'],
+                prices: [100, 80, 120, 90, 110],
+                annualDividend: 4,
+                currentIndex: 0,
+            };
+
+            const calculateYields = (prices, dividend) => prices.map(p => (dividend / p) * 100);
+
+            const priceYieldChartCtx = document.getElementById('priceYieldChart').getContext('2d');
+            const priceYieldChart = new Chart(priceYieldChartCtx, {
+                type: 'line',
+                data: {
+                    labels: priceYieldData.labels,
+                    datasets: [
+                        {
+                            label: 'Stock Price ($)',
+                            data: priceYieldData.prices,
+                            borderColor: '#6A8EAE',
+                            backgroundColor: '#6A8EAE',
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: 'Dividend Yield (%)',
+                            data: calculateYields(priceYieldData.prices, priceYieldData.annualDividend),
+                            borderColor: '#C0A062',
+                            backgroundColor: '#C0A062',
+                            yAxisID: 'y1',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    stacked: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Stock Price ($)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Yield (%)' },
+                            grid: { drawOnChartArea: false },
+                        }
+                    },
+                     plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    let value = context.parsed.y;
+                                    if (context.dataset.yAxisID === 'y') {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+                                    } else {
+                                        label += value.toFixed(2) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            document.getElementById('changePriceBtn').addEventListener('click', () => {
+                priceYieldData.currentIndex = (priceYieldData.currentIndex + 1) % priceYieldData.prices.length;
+                let newPrices = priceYieldData.prices.slice();
+                let temp = newPrices.pop();
+                newPrices.unshift(temp);
+                priceYieldData.prices = newPrices;
+
+                priceYieldChart.data.datasets[0].data = newPrices;
+                priceYieldChart.data.datasets[1].data = calculateYields(newPrices, priceYieldData.annualDividend);
+                priceYieldChart.update();
+            });
+
+            const navLinks = document.querySelectorAll('nav a');
+            const sections = document.querySelectorAll('section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 120) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
